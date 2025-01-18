@@ -1,0 +1,23 @@
+$r:1.25rem;
+
+.homePage {
+    text-align: center;
+    margin-top: $r;
+  }
+  
+  .catImagesContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $r; 
+  }
+  
+  .catImageItem {
+    width: calc(20% - $r); 
+  }
+  
+  .catImage {
+    max-width: 100%;
+    height: auto;
+  }
+  
