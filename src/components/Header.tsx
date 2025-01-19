@@ -32,7 +32,7 @@ const Header = () => {
           </button>
         </Link>
 
-        <Link href="/any-cats" passHref>
+        <Link href="/favorit" passHref>
           <button
             onClick={() => handleButtonClick('Any Cats')}
             className={`${styles.button} ${fontR.className}`}

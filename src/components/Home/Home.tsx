@@ -15,11 +15,12 @@ const HomePage = () => {
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [useMouse, setMouse] = useState<boolean[]>([]);
   const { storeId } = useIdCatStore();
-  const [useLove, setLove] = useState<boolean[]>([])
+  const [useLove, setLove] = useState<boolean[]>([]);
 
   useEffect(() => {
     fetchCats();
     window.addEventListener('scroll', handleScroll);
+    loadLovedCats();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -31,50 +32,73 @@ const HomePage = () => {
   }, [catImages]);
 
   useEffect(() => {
-    setLove(Array(catImages.length).fill(false));
-  }, [catImages])
+    loadLovedCats(); // Ensures love status is checked every time the component is rendered
+  }, [catImages]);
 
-  const handleScroll: () => void = () => {
-    const isAtBottom: boolean = window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 100;
-
+  const handleScroll = () => {
+    const isAtBottom = window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 100;
     if (isAtBottom && !loading && !isFetching) {
       setIsFetching(true);
       fetchCats().finally(() => setIsFetching(false));
     }
   };
 
-  const handerLoveb: (index: number) => void = (index) => {
+  const handerLoveb = (index: number) => {
     const catId: string = catImages[index].id;
     storeId(catId);
-  
-    const newLove:boolean[] = [...useLove];
 
+    const newLove = [...useLove];
     if (newLove[index]) {
       newLove[index] = false;
+      removeLovedCat(catId);
     } else {
       newLove[index] = true;
+      addLovedCat(catId);
     }
-  
     setLove(newLove);
-  }
-  
+  };
 
   const onMouse: IMouse = (index) => {
     const newMouse: boolean[] = [...useMouse];
     newMouse[index] = true;
     setMouse(newMouse);
-    return (true)
+    return true;
   };
 
   const offMouse: IMouse = (index) => {
     const newMouse = [...useMouse];
     newMouse[index] = false;
     setMouse(newMouse);
-    return (false)
+    return false;
+  };
+
+  const loadLovedCats = () => {
+    const savedCats = localStorage.getItem('lovedCats');
+    if (savedCats) {
+      const lovedCatIds = JSON.parse(savedCats);
+      const updatedLove = catImages.map((cat) => lovedCatIds.includes(cat.id));
+      setLove(updatedLove); // Sync love state with localStorage
+    }
+  };
+
+  const addLovedCat = (catId: string) => {
+    const savedCats = localStorage.getItem('lovedCats');
+    const lovedCatIds = savedCats ? JSON.parse(savedCats) : [];
+    lovedCatIds.push(catId);
+    localStorage.setItem('lovedCats', JSON.stringify(lovedCatIds));
+  };
+
+  const removeLovedCat = (catId: string) => {
+    const savedCats = localStorage.getItem('lovedCats');
+    if (savedCats) {
+      const lovedCatIds = JSON.parse(savedCats);
+      const updatedLovedCats = lovedCatIds.filter((id: string) => id !== catId);
+      localStorage.setItem('lovedCats', JSON.stringify(updatedLovedCats));
+    }
   };
 
   if (loading && catImages.length === 0) {
-    return <div>Подгружаем котиков...</div>;
+    return <div className={styles.homePage}>Подгружаем котиков...</div>;
   }
 
   return (

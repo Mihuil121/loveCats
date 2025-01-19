@@ -16,7 +16,7 @@ interface CatId {
 export const useCatStore = create<CatStore>((set) => ({
   catImages: [],
   loading: false,
-  fetchCats: async (limit: number = 5) => {
+  fetchCats: async (limit: number = 10) => {
     set({ loading: true });
     const data: CatImage[] = await fetchCatData(limit);
     set((state) => ({
@@ -36,3 +36,35 @@ export const useIdCatStore = create<CatId>((set) => ({
     }))
   }
 }))
+
+
+interface LocalStore {
+  lovedCats: string[];
+  loadLovedCats: () => void;
+  addLovedCat: (catId: string) => void;
+  removeLovedCat: (catId: string) => void;
+}
+
+export const useLocalStore = create<LocalStore>((set) => ({
+  lovedCats: [],
+  loadLovedCats: () => {
+    const savedCats = localStorage.getItem('lovedCats');
+    if (savedCats) {
+      set({ lovedCats: JSON.parse(savedCats) });
+    }
+  },
+  addLovedCat: (catId: string) => {
+    set((state) => {
+      const updatedCats = [...state.lovedCats, catId];
+      localStorage.setItem('lovedCats', JSON.stringify(updatedCats)); // Обновляем localStorage
+      return { lovedCats: updatedCats };
+    });
+  },
+  removeLovedCat: (catId: string) => {
+    set((state) => {
+      const updatedCats = state.lovedCats.filter((id) => id !== catId);
+      localStorage.setItem('lovedCats', JSON.stringify(updatedCats)); // Обновляем localStorage
+      return { lovedCats: updatedCats };
+    });
+  },
+}));
