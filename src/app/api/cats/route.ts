@@ -1,33 +1,58 @@
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const limit = searchParams.get('limit') || '5';
+interface RawCatData {
+  _id: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
 
-  const headers = {
-    "Content-Type": "application/json",
-    "x-api-key": "live_tR4dIBuckyTrhTAvk0pxfanEG44RmXDSg1VGm3fBNf5m5OoyRBuvqanmqpoOkWC1",
-    "Accept": "application/json",
-    "Cache-Control": "no-cache",
-  };
+interface FormattedCat {
+  id: string;
+  url: string;
+  breeds: Array<{ name: string }>;
+}
 
+const API_URL = 'https://cataas.com/api/cats';
+
+export async function GET(request: Request): Promise<NextResponse<FormattedCat[] | { error: string }>> {
   try {
+    const urlParams = new URL(request.url);
+    const searchParams = urlParams.searchParams;
+    const limit = searchParams.get('limit') || '5';
+    const page = searchParams.get('page') || '0';
+    const skipCount = Number(page) * Number(limit);
+
     const response = await fetch(
-      `https://api.thecatapi.com/v1/images/search?size=med&mime_types=jpg&format=json&has_breeds=true&order=RANDOM&page=0&limit=${limit}`,
-      { 
-        headers,
+      `${API_URL}?limit=${limit}&skip=${skipCount}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         cache: 'no-store'
       }
     );
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`Ошибка API: ${response.status}`);
     }
     
-    const data = await response.json();
-    return NextResponse.json(data);
+    const rawData = await response.json() as RawCatData[];
+    
+    const formattedCats: FormattedCat[] = rawData.map((cat) => ({
+      id: cat._id,
+      url: `https://cataas.com/cat/${cat._id}`,
+      breeds: []
+    }));
+    
+    return NextResponse.json(formattedCats);
+
   } catch (error) {
-    console.error("Error fetching cat data:", error);
-    return NextResponse.json({ error: "Failed to fetch cats" }, { status: 500 });
+    console.error("Произошла ошибка:", error);
+    return NextResponse.json(
+      { error: "Не удалось загрузить котиков" },
+      { status: 500 }
+    );
   }
-} 
+}

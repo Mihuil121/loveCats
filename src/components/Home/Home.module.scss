@@ -1,44 +1,62 @@
-
 $r: 1.25rem;
 $rem: 3rem;
-$header-height: 50px; 
+$header-height: 3.125rem; 
 
 .homePage {
   text-align: center;
-  padding-top: calc($rem + $header-height); 
-}
+  padding-top: calc($rem + $header-height);
 
-.catImagesContainer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: $r; 
-}
+  .catImagesContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $r;
 
-.catImageItem {
-  width: calc(20% - $r);
-  position: relative;
-}
+    .catImageItem {
+      width: calc(20% - $r);
+      position: relative;
+      aspect-ratio: 1/1;
 
-.catImage {
-  max-width: 100%;
-  height: auto;
-}
+      .imageWrapper {
+        position: relative;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
 
-.imageWrapper {
-  position: relative;
-}
+        &:hover {
+          transform: translateY(-0.3125rem);
+          box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+        }
 
-.heartIcon {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  font-size: 2rem;
-  color: white;
-  transition: transform 0.3s ease;
-  pointer-events: none;
-}
+        img.catImage {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          position: relative;
+        }
 
-.heartHovered {
-  transform: scale(1.3);
+        .heartIcon {
+          position: absolute;
+          bottom: 0.3125rem;
+          right: 0.3125rem;
+          font-size: 2rem;
+          color: white;
+          transition: transform 0.3s ease;
+          pointer-events: none;
+          z-index: 2;
+          text-shadow: 0.125rem 0.125rem 0.25rem rgba(0, 0, 0, 0.5);
+
+          &.heartHovered {
+            transform: scale(1.3);
+          }
+
+          &.heartRed {
+            color: red;
+          }
+        }
+      }
+    }
+  }
 }

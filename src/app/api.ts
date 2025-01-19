@@ -1,28 +1,34 @@
-
 export interface CatImage {
   url: string;
   breeds: Array<{ name: string }>;
-  id:string
+  id: string
 }
 
-export const fetchCatData = async (limit: number = 5): Promise<CatImage[]> => {
-  const headers = new Headers({
-    "Content-Type": "application/json",
-    "x-api-key": "live_tR4dIBuckyTrhTAvk0pxfanEG44RmXDSg1VGm3fBNf5m5OoyRBuvqanmqpoOkWC1",
-  });
-
-  const requestOptions: RequestInit = {
-    method: 'GET',
-    headers: headers,
-    redirect: 'follow',
-  };
-
+export const fetchCatData = async (limit: number = 5, page: number = 0): Promise<CatImage[]> => {
   try {
-    const response = await fetch(`https://api.thecatapi.com/v1/images/search?size=med&mime_types=jpg&format=json&has_breeds=true&order=RANDOM&page=0&limit=${limit}`, requestOptions);
-    const result = await response.json();
-    return result;
+    const response = await fetch(`/api/cats?limit=${limit}&page=${page}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json() as { error: string };
+      console.error('Ошибка API:', errorData);
+      throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (!Array.isArray(data)) {
+      console.error('Неверный формат ответа:', data);
+      return [];
+    }
+
+    return data as CatImage[];
   } catch (error) {
-    console.error("Error fetching cat data:", error);
+    console.error("Ошибка при загрузке котиков:", error);
     return [];
   }
 };

@@ -6,8 +6,12 @@ import { CatImage } from '@/app/api';
 import Image from 'next/image';
 import { FaHeart } from 'react-icons/fa';
 
-interface IMouse {
-  (index: number): boolean
+interface MouseHandler {
+  (index: number): void;
+}
+
+interface LocalStorageHandler {
+  (catId: string): void;
 }
 
 const HomePage = () => {
@@ -32,22 +36,22 @@ const HomePage = () => {
   }, [catImages]);
 
   useEffect(() => {
-    loadLovedCats(); // Ensures love status is checked every time the component is rendered
+    loadLovedCats();
   }, [catImages]);
 
-  const handleScroll = () => {
-    const isAtBottom = window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 100;
+  const handleScroll = (): void => {
+    const isAtBottom: boolean = window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 100;
     if (isAtBottom && !loading && !isFetching) {
       setIsFetching(true);
       fetchCats().finally(() => setIsFetching(false));
     }
   };
 
-  const handerLoveb = (index: number) => {
+  const handerLoveb = (index: number): void => {
     const catId: string = catImages[index].id;
     storeId(catId);
 
-    const newLove = [...useLove];
+    const newLove: boolean[] = [...useLove];
     if (newLove[index]) {
       newLove[index] = false;
       removeLovedCat(catId);
@@ -58,41 +62,39 @@ const HomePage = () => {
     setLove(newLove);
   };
 
-  const onMouse: IMouse = (index) => {
+  const onMouse: MouseHandler = (index) => {
     const newMouse: boolean[] = [...useMouse];
     newMouse[index] = true;
     setMouse(newMouse);
-    return true;
   };
 
-  const offMouse: IMouse = (index) => {
-    const newMouse = [...useMouse];
+  const offMouse: MouseHandler = (index) => {
+    const newMouse: boolean[] = [...useMouse];
     newMouse[index] = false;
     setMouse(newMouse);
-    return false;
   };
 
-  const loadLovedCats = () => {
-    const savedCats = localStorage.getItem('lovedCats');
+  const loadLovedCats = (): void => {
+    const savedCats: string | null = localStorage.getItem('lovedCats');
     if (savedCats) {
-      const lovedCatIds = JSON.parse(savedCats);
-      const updatedLove = catImages.map((cat) => lovedCatIds.includes(cat.id));
-      setLove(updatedLove); // Sync love state with localStorage
+      const lovedCatIds: string[] = JSON.parse(savedCats);
+      const updatedLove: boolean[] = catImages.map((cat) => lovedCatIds.includes(cat.id));
+      setLove(updatedLove);
     }
   };
 
-  const addLovedCat = (catId: string) => {
-    const savedCats = localStorage.getItem('lovedCats');
-    const lovedCatIds = savedCats ? JSON.parse(savedCats) : [];
+  const addLovedCat: LocalStorageHandler = (catId) => {
+    const savedCats: string | null = localStorage.getItem('lovedCats');
+    const lovedCatIds: string[] = savedCats ? JSON.parse(savedCats) : [];
     lovedCatIds.push(catId);
     localStorage.setItem('lovedCats', JSON.stringify(lovedCatIds));
   };
 
-  const removeLovedCat = (catId: string) => {
-    const savedCats = localStorage.getItem('lovedCats');
+  const removeLovedCat: LocalStorageHandler = (catId) => {
+    const savedCats: string | null = localStorage.getItem('lovedCats');
     if (savedCats) {
-      const lovedCatIds = JSON.parse(savedCats);
-      const updatedLovedCats = lovedCatIds.filter((id: string) => id !== catId);
+      const lovedCatIds: string[] = JSON.parse(savedCats);
+      const updatedLovedCats: string[] = lovedCatIds.filter((id) => id !== catId);
       localStorage.setItem('lovedCats', JSON.stringify(updatedLovedCats));
     }
   };
@@ -117,13 +119,16 @@ const HomePage = () => {
                   src={catImage.url}
                   alt={`Cat ${index + 1}`}
                   className={styles.catImage}
-                  layout="responsive"
+                  width={400}
+                  height={400}
                   style={{
-                    transition: '1s',
-                    boxShadow: useMouse[index] ? '3px 3px black, -1em 1rem .4em black' : 'none',
+                    transition: '0.51s',
+                    boxShadow: useMouse[index] ? '0.188rem 0.188rem black, -1em 1rem 0.25em black' : 'none',
                   }}
-                  width={100}
-                  height={100}
+                  onError={(e) => {
+                    console.error(`Error loading image: ${catImage.url}`);
+                    e.currentTarget.src = '/fallback-cat.jpg';
+                  }}
                 />
                 <FaHeart
                   className={`${styles.heartIcon} ${useMouse[index] ? styles.heartHovered : ''}`}

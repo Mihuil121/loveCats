@@ -4,7 +4,10 @@ import { CatImage, fetchCatData } from '../api';
 interface CatStore {
   catImages: CatImage[];
   loading: boolean;
-  fetchCats: () => Promise<void>;
+  error: string | null;
+  page: number;
+  fetchCats: (limit?: number) => Promise<void>;
+  setPage: (page: number) => void;
 }
 
 interface CatId {
@@ -16,13 +19,33 @@ interface CatId {
 export const useCatStore = create<CatStore>((set) => ({
   catImages: [],
   loading: false,
+  error: null,
+  page: 0,
+  setPage: (page) => set({ page }),
   fetchCats: async (limit: number = 10) => {
-    set({ loading: true });
-    const data: CatImage[] = await fetchCatData(limit);
-    set((state) => ({
-      catImages: [...state.catImages, ...data],
-      loading: false,
-    }));
+    set({ loading: true, error: null });
+    try {
+      const state = useCatStore.getState();
+      const data = await fetchCatData(limit, state.page);
+      if (data.length === 0) {
+        throw new Error('No data received');
+      }
+      set((state) => {
+        const newImages = data.filter(newCat => 
+          !state.catImages.some(existingCat => existingCat.id === newCat.id)
+        );
+        return {
+          catImages: [...state.catImages, ...newImages],
+          loading: false,
+          page: state.page + 1
+        };
+      });
+    } catch (error) {
+      set({ 
+        loading: false, 
+        error: error instanceof Error ? error.message : 'Failed to fetch cats'
+      });
+    }
   },
 }));
 

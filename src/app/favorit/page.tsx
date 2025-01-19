@@ -11,6 +11,7 @@ const FavoritesPage = () => {
   const { lovedCats, loadLovedCats, removeLovedCat } = useLocalStore((state) => state);
   const { catImages } = useCatStore((state) => state);
   const [lovedCatIds, setLovedCatIds] = useState<string[]>([]);
+  const [useMouse, setMouse] = useState<boolean[]>([]);
 
   useEffect(() => {
     loadLovedCats();
@@ -18,47 +19,66 @@ const FavoritesPage = () => {
 
   useEffect(() => {
     setLovedCatIds(lovedCats);
+    setMouse(Array(lovedCats.length).fill(false));
   }, [lovedCats]);
 
   const handleRemoveLovedCat = (catId: string) => {
     removeLovedCat(catId);
+    setLovedCatIds(prev => prev.filter(id => id !== catId));
   };
 
-  const handleHeartClick = (catId: string) => {
-    const updatedLovedCats = lovedCatIds.filter(id => id !== catId);
-    setLovedCatIds(updatedLovedCats);
-    handleRemoveLovedCat(catId);
+  const onMouse = (index: number) => {
+    const newMouse = [...useMouse];
+    newMouse[index] = true;
+    setMouse(newMouse);
   };
 
-  const lovedCatImages = catImages.filter((cat) => lovedCatIds.includes(cat.id));
+  const offMouse = (index: number) => {
+    const newMouse = [...useMouse];
+    newMouse[index] = false;
+    setMouse(newMouse);
+  };
+
+  const uniqueLovedCatImages = catImages.filter((cat) => {
+    return lovedCatIds.includes(cat.id) && 
+           catImages.findIndex(c => c.id === cat.id) === catImages.indexOf(cat);
+  });
 
   return (
     <div className={styles.homePage}>
       <h2>Избранные котики</h2>
-      {lovedCatImages.length > 0 ? (
+      {uniqueLovedCatImages.length > 0 ? (
         <div className={styles.catImagesContainer}>
-          {lovedCatImages.map((catImage: CatImage) => (
-            <div key={catImage.id} className={styles.catImageItem}>
-              <div className={styles.imageWrapper}>
+          {uniqueLovedCatImages.map((catImage: CatImage, index: number) => (
+            <div 
+              key={catImage.id} 
+              className={styles.catImageItem}
+              onMouseEnter={() => onMouse(index)}
+              onMouseLeave={() => offMouse(index)}
+            >
+              <div 
+                className={styles.imageWrapper} 
+                onClick={() => handleRemoveLovedCat(catImage.id)}
+              >
                 <Image
                   src={catImage.url}
                   alt={`Cat ${catImage.id}`}
                   className={styles.catImage}
-                  layout="responsive"
-                  width={100}
-                  height={100}
+                  width={400}
+                  height={400}
+                  style={{
+                    transition: '0.3s',
+                    boxShadow: useMouse[index] ? '0.188rem 0.188rem black, -1em 1rem 0.25em black' : 'none',
+                  }}
+                  onError={(e) => {
+                    console.error(`Error loading image: ${catImage.url}`);
+                    e.currentTarget.src = '/fallback-cat.jpg';
+                  }}
                 />
                 <FaHeart
-                  className={`${styles.heartIcon} ${lovedCatIds.includes(catImage.id) ? styles.heartRed : ''}`}
-                  style={{ color: lovedCatIds.includes(catImage.id) ? 'red' : 'white' }}
-                  onClick={() => handleHeartClick(catImage.id)}
+                  className={`${styles.heartIcon} ${useMouse[index] ? styles.heartHovered : ''}`}
+                  style={{ color: 'red' }}
                 />
-                <button
-                  onClick={() => handleRemoveLovedCat(catImage.id)}
-                  className={styles.removeButton}
-                >
-                  Убрать из избранного
-                </button>
               </div>
             </div>
           ))}
