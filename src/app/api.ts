@@ -2,6 +2,7 @@
 export interface CatImage {
   url: string;
   breeds: Array<{ name: string }>;
+  id:string
 }
 
 export const fetchCatData = async (limit: number = 5): Promise<CatImage[]> => {

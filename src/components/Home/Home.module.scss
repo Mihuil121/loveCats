@@ -1,23 +1,44 @@
-$r:1.25rem;
+
+$r: 1.25rem;
+$rem: 3rem;
+$header-height: 50px; 
 
 .homePage {
-    text-align: center;
-    margin-top: $r;
-  }
-  
-  .catImagesContainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: $r; 
-  }
-  
-  .catImageItem {
-    width: calc(20% - $r); 
-  }
-  
-  .catImage {
-    max-width: 100%;
-    height: auto;
-  }
-  
+  text-align: center;
+  padding-top: calc($rem + $header-height); 
+}
+
+.catImagesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $r; 
+}
+
+.catImageItem {
+  width: calc(20% - $r);
+  position: relative;
+}
+
+.catImage {
+  max-width: 100%;
+  height: auto;
+}
+
+.imageWrapper {
+  position: relative;
+}
+
+.heartIcon {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 2rem;
+  color: white;
+  transition: transform 0.3s ease;
+  pointer-events: none;
+}
+
+.heartHovered {
+  transform: scale(1.3);
+}
