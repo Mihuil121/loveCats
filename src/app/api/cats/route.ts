@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 
 interface RawCatData {
-  _id: string;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
+  id: string;
+  url: string;
+  breeds: Array<{ name: string }>;
 }
 
 interface FormattedCat {
@@ -13,7 +12,7 @@ interface FormattedCat {
   breeds: Array<{ name: string }>;
 }
 
-const API_URL = 'https://cataas.com/api/cats';
+const API_URL = 'https://api.thecatapi.com/v1/images/search';
 
 export async function GET(request: Request): Promise<NextResponse<FormattedCat[] | { error: string }>> {
   try {
@@ -21,15 +20,17 @@ export async function GET(request: Request): Promise<NextResponse<FormattedCat[]
     const searchParams = urlParams.searchParams;
     const limit = searchParams.get('limit') || '6';
     const page = searchParams.get('page') || '0';
-    const skipCount = Number(page) * Number(limit);
+
+    const headers = new Headers({
+      "Content-Type": "application/json",
+      "x-api-key": "DEMO-API-KEY"
+    });
 
     const response = await fetch(
-      `${API_URL}?limit=${limit}&skip=${skipCount}`,
+      `${API_URL}?size=med&mime_types=jpg&format=json&has_breeds=true&order=RANDOM&page=${page}&limit=${limit}`,
       {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         cache: 'no-store'
       }
     );
@@ -41,15 +42,14 @@ export async function GET(request: Request): Promise<NextResponse<FormattedCat[]
     const rawData = await response.json() as RawCatData[];
     
     const formattedCats: FormattedCat[] = rawData.map((cat) => ({
-      id: cat._id,
-      url: `https://cataas.com/cat/${cat._id}`,
-      breeds: []
+      id: cat.id,
+      url: cat.url,
+      breeds: cat.breeds || []
     }));
     
     return NextResponse.json(formattedCats);
 
   } catch (error) {
-    console.error("Произошла ошибка:", error);
     return NextResponse.json(
       { error: "Не удалось загрузить котиков" },
       { status: 500 }
