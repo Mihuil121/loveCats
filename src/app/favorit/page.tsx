@@ -46,7 +46,6 @@ const FavoritesPage = () => {
 
   return (
     <div className={styles.homePage}>
-      <h2>Избранные котики</h2>
       {uniqueLovedCatImages.length > 0 ? (
         <div className={styles.catImagesContainer}>
           {uniqueLovedCatImages.map((catImage: CatImage, index: number) => (

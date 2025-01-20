@@ -19,7 +19,7 @@ export async function GET(request: Request): Promise<NextResponse<FormattedCat[]
   try {
     const urlParams = new URL(request.url);
     const searchParams = urlParams.searchParams;
-    const limit = searchParams.get('limit') || '5';
+    const limit = searchParams.get('limit') || '6';
     const page = searchParams.get('page') || '0';
     const skipCount = Number(page) * Number(limit);
 

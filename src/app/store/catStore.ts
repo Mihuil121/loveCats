@@ -22,7 +22,7 @@ export const useCatStore = create<CatStore>((set) => ({
   error: null,
   page: 0,
   setPage: (page) => set({ page }),
-  fetchCats: async (limit: number = 10) => {
+  fetchCats: async (limit: number = 20) => {
     set({ loading: true, error: null });
     try {
       const state = useCatStore.getState();
